@@ -1,5 +1,10 @@
 import { ApiError } from "@/lib/api/errors";
 import type { DbClient } from "@/lib/db/client";
+import {
+  SUMMARY_SELECT,
+  toSummary,
+  type SummaryRow,
+} from "@/lib/services/search";
 import type { AgentProfile, AgentReview } from "@/lib/types/profile";
 import type { ListingSummary } from "@/lib/types/listing";
 import type {
@@ -82,23 +87,6 @@ export async function getAgentById(
   return data as unknown as AgentProfile;
 }
 
-type SummaryRow = {
-  id: string;
-  transaction_type: ListingSummary["transaction_type"];
-  property_type: ListingSummary["property_type"];
-  title: string | null;
-  price: number | null;
-  bhk: number | null;
-  area_sqft: number | null;
-  furnishing: string | null;
-  created_at: string;
-  locations:
-    | { locality: string | null; city: string | null; pincode: string | null }
-    | { locality: string | null; city: string | null; pincode: string | null }[]
-    | null;
-  media: { url: string; sort_order: number }[] | null;
-};
-
 /** The agent's active listing portfolio (owner_id = the agent's user). */
 export async function getAgentListings(
   supabase: DbClient,
@@ -107,40 +95,12 @@ export async function getAgentListings(
   const agent = await getAgentById(supabase, agentId);
   const { data, error } = await supabase
     .from("listings")
-    .select(
-      "id, transaction_type, property_type, title, price, bhk, area_sqft, " +
-        "furnishing, created_at, locations(locality, city, pincode), " +
-        "media(url, sort_order)",
-    )
+    .select(SUMMARY_SELECT)
     .eq("owner_id", agent.user_id)
     .eq("status", "active")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return ((data ?? []) as unknown as SummaryRow[]).map(toSummary);
-}
-
-function toSummary(row: SummaryRow): ListingSummary {
-  const loc = Array.isArray(row.locations)
-    ? (row.locations[0] ?? null)
-    : row.locations;
-  const cover =
-    (row.media ?? []).slice().sort((a, b) => a.sort_order - b.sort_order)[0]
-      ?.url ?? null;
-  return {
-    id: row.id,
-    transaction_type: row.transaction_type,
-    property_type: row.property_type,
-    title: row.title,
-    price: row.price,
-    bhk: row.bhk,
-    area_sqft: row.area_sqft,
-    furnishing: row.furnishing,
-    locality: loc?.locality ?? null,
-    city: loc?.city ?? null,
-    pincode: loc?.pincode ?? null,
-    cover_url: cover,
-    created_at: row.created_at,
-  };
 }
 
 /** Create or update the caller's review of an agent (one per reviewer). */

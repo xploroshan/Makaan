@@ -94,6 +94,8 @@ export interface ListingSummary {
   locality: string | null;
   city: string | null;
   pincode: string | null;
+  lat: number | null;
+  lng: number | null;
   cover_url: string | null;
   created_at: string;
 }

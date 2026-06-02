@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Building2,
   Home as HomeIcon,
+  MapPin,
   MessageSquareLock,
   Search,
   ShieldCheck,
@@ -30,6 +31,7 @@ const CATEGORIES = [
     icon: MessageSquareLock,
   },
   { href: "/search?property_type=land", label: "Plots & land", icon: Trees },
+  { href: "/search?view=map", label: "Map search", icon: MapPin },
 ];
 
 const PILLARS = [

@@ -114,6 +114,8 @@ export default async function ListingDetailPage({
     locality: listing.location?.locality ?? null,
     city: listing.location?.city ?? null,
     pincode: listing.location?.pincode ?? null,
+    lat: listing.location?.lat ?? null,
+    lng: listing.location?.lng ?? null,
     cover_url: photos[0]?.url ?? null,
     created_at: listing.created_at,
   };
