@@ -14,7 +14,9 @@ import { createSupabaseBrowserClient } from "@/lib/db/supabase-browser";
  */
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
+  const configured =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -24,6 +26,7 @@ export default function LoginPage() {
   async function sendCode() {
     setBusy(true);
     setError(null);
+    const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { shouldCreateUser: true },
@@ -36,6 +39,7 @@ export default function LoginPage() {
   async function verify() {
     setBusy(true);
     setError(null);
+    const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.verifyOtp({
       email,
       token: code,
@@ -45,6 +49,20 @@ export default function LoginPage() {
     if (error) return setError(error.message);
     router.push("/");
     router.refresh();
+  }
+
+  if (!configured) {
+    return (
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
+        <h1 className="text-2xl font-bold">Sign-in isn&apos;t configured</h1>
+        <p className="text-muted-foreground mt-2 text-sm">
+          The Supabase keys aren&apos;t available in this build. Set
+          <code className="mx-1">NEXT_PUBLIC_SUPABASE_URL</code> and
+          <code className="mx-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in your
+          host&apos;s environment variables, then redeploy.
+        </p>
+      </main>
+    );
   }
 
   return (
