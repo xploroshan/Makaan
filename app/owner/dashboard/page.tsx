@@ -27,12 +27,20 @@ export default function OwnerDashboardPage() {
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Owner dashboard</h1>
-        <Link
-          href="/owner/listings/new"
-          className="text-primary text-sm underline"
-        >
-          + New listing
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/owner/coliving"
+            className="text-primary text-sm underline"
+          >
+            Co-living occupancy
+          </Link>
+          <Link
+            href="/owner/listings/new"
+            className="text-primary text-sm underline"
+          >
+            + New listing
+          </Link>
+        </div>
       </div>
 
       {error && (
