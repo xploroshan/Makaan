@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Sora } from "next/font/google";
 
+import { CompareBar } from "@/components/compare/compare-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Providers>
           <SiteHeader />
           <div className="flex flex-1 flex-col">{children}</div>
+          <CompareBar />
           <SiteFooter />
         </Providers>
       </body>

@@ -37,13 +37,13 @@ export function supportsCursor(sort: SortOption): boolean {
   return sort === "newest" || sort === "relevance";
 }
 
-const SUMMARY_SELECT =
+export const SUMMARY_SELECT =
   "id, transaction_type, property_type, title, price, bhk, area_sqft, " +
   "furnishing, created_at, " +
   "locations!inner(locality, city, pincode), " +
   "media(url, sort_order)";
 
-type SummaryRow = {
+export type SummaryRow = {
   id: string;
   transaction_type: ListingSummary["transaction_type"];
   property_type: ListingSummary["property_type"];
@@ -139,7 +139,7 @@ export async function searchListings(
   return { items, nextCursor };
 }
 
-function toSummary(row: SummaryRow): ListingSummary {
+export function toSummary(row: SummaryRow): ListingSummary {
   const loc = Array.isArray(row.locations)
     ? (row.locations[0] ?? null)
     : row.locations;

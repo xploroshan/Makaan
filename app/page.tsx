@@ -12,6 +12,7 @@ import {
 
 import { HeroSearch } from "@/components/home/hero-search";
 import { ListingCard } from "@/components/listings/listing-card";
+import { RecentlyViewedStrip } from "@/components/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
@@ -161,6 +162,8 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <RecentlyViewedStrip />
 
       {/* Pillars */}
       <section className="mx-auto w-full max-w-6xl px-6 py-16">

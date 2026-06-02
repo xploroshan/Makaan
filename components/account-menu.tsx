@@ -37,6 +37,7 @@ export function AccountMenu({
   }
 
   const items: { href: string; label: string }[] = [
+    { href: "/account/saved", label: "Saved homes" },
     { href: "/account/profile", label: "Profile & security" },
     { href: "/account/alerts", label: "Saved searches & alerts" },
     { href: "/account/activity", label: "Activity" },

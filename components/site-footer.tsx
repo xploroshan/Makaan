@@ -20,9 +20,19 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     ],
   },
   {
+    title: "Resources",
+    links: [
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/tools", label: "EMI & rent calculators" },
+      { href: "/compare", label: "Compare homes" },
+      { href: "/faq", label: "Help & FAQ" },
+    ],
+  },
+  {
     title: "Company",
     links: [
       { href: "/search", label: "Browse listings" },
+      { href: "/account/saved", label: "Saved homes" },
       { href: "/account/profile", label: "Your account" },
     ],
   },
@@ -31,7 +41,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
 export function SiteFooter() {
   return (
     <footer className="bg-secondary/30 mt-20 border-t">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <div className="flex items-center gap-2">
             <span className="bg-brand-gradient text-primary-foreground flex size-8 items-center justify-center rounded-lg">
