@@ -1,13 +1,18 @@
 import { notFound } from "next/navigation";
 
+import { InterestButton } from "@/components/listings/interest-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Stars } from "@/components/ui/stars";
 import { ApiError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
 import { formatArea, formatPrice, transactionLabel } from "@/lib/format";
+import { hasRevealedContact } from "@/lib/services/enquiries";
 import { resolveTemplate } from "@/lib/services/form-templates";
 import { getListingDetail } from "@/lib/services/listings";
+import { listListingRatings } from "@/lib/services/ratings";
+import type { RatingWithAuthor } from "@/lib/services/ratings";
 import type { ListingDetail } from "@/lib/types/listing";
 
 type Params = { id: string };
@@ -21,18 +26,39 @@ export default async function ListingDetailPage({
 
   let listing: ListingDetail;
   let labels: Record<string, string> = {};
+  let ratings: RatingWithAuthor[] = [];
+  let isOwner = false;
   try {
     const viewer = await getSessionUser();
     const supabase = await createSupabaseServerClient();
-    listing = await getListingDetail(supabase, id, viewer?.id ?? null);
-    const template = await resolveTemplate(
+    const revealed = viewer
+      ? await hasRevealedContact(supabase, id, viewer.id)
+      : false;
+    listing = await getListingDetail(
       supabase,
-      listing.transaction_type,
-      listing.property_type,
+      id,
+      viewer?.id ?? null,
+      revealed,
     );
+    isOwner = viewer?.id === listing.owner_id;
+
+    // Count a view for non-owners (atomic, security-definer RPC).
+    if (!isOwner) {
+      await supabase.rpc("increment_listing_view", { p_listing: id });
+    }
+
+    const [template, ratingList] = await Promise.all([
+      resolveTemplate(
+        supabase,
+        listing.transaction_type,
+        listing.property_type,
+      ),
+      listListingRatings(supabase, id),
+    ]);
     labels = Object.fromEntries(
       (template?.fields ?? []).map((f) => [f.key, f.label]),
     );
+    ratings = ratingList;
   } catch (err) {
     if (err instanceof ApiError && err.code === "not_found") notFound();
     return (
@@ -123,9 +149,46 @@ export default async function ListingDetailPage({
               </dl>
             </section>
           )}
+
+          <section className="mt-8">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold">
+                Ratings ({ratings.length})
+              </h2>
+              {ratings.length > 0 && (
+                <Stars
+                  value={
+                    ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
+                  }
+                />
+              )}
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Only seekers who completed a visit can rate — no fake reviews.
+            </p>
+            <div className="mt-4 space-y-3">
+              {ratings.map((r) => (
+                <Card key={r.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {r.author_name ?? "A visitor"}
+                      </span>
+                      <Stars value={r.rating} />
+                    </div>
+                    {r.review && (
+                      <p className="text-muted-foreground mt-2 text-sm">
+                        {r.review}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Contact / connect (consent-based reveal lands in the next slice) */}
+        {/* Consent-based connect */}
         <aside>
           <Card>
             <CardContent className="space-y-3 p-5">
@@ -133,12 +196,11 @@ export default async function ListingDetailPage({
                 Contact details are shared only after the owner accepts your
                 interest — zero spam.
               </p>
-              <button
-                className="bg-primary text-primary-foreground w-full rounded-md px-4 py-2 text-sm font-medium opacity-60"
-                disabled
-              >
-                Express interest (coming soon)
-              </button>
+              {isOwner ? (
+                <p className="text-sm font-medium">This is your listing.</p>
+              ) : (
+                <InterestButton listingId={listing.id} />
+              )}
             </CardContent>
           </Card>
         </aside>

@@ -226,6 +226,7 @@ export async function getListingDetail(
   supabase: DbClient,
   id: string,
   viewerId: string | null,
+  revealed = false,
 ): Promise<ListingDetail> {
   const { data, error } = await supabase
     .from("listings")
@@ -253,8 +254,9 @@ export async function getListingDetail(
     : row.locations;
 
   const isOwner = viewerId != null && viewerId === row.owner_id;
+  const canSeeAddress = isOwner || revealed;
   const location = rawLocation
-    ? { ...rawLocation, address: isOwner ? rawLocation.address : null }
+    ? { ...rawLocation, address: canSeeAddress ? rawLocation.address : null }
     : null;
 
   const media = (row.media ?? []).sort((a, b) => a.sort_order - b.sort_order);

@@ -106,5 +106,12 @@ curl http://localhost:3000/api/v1/health
   (aggregated rating via trigger), and **verification badges** (identity /
   ownership). Includes a role-escalation guard so users can't self-assign admin.
 
-Next: **Slice C — Connect + Trust** (consent-based contact reveal, real-time
-chat, visit scheduling, visit-gated ratings, owner/agent dashboard).
+- **Slice C — Connect + Trust** ✅ — the zero-spam flow: express interest →
+  **consent-based contact reveal** (owner contact stays hidden until accepted,
+  exact address unmasks on consent), **real-time chat** (Supabase Realtime) with
+  a spam/scam screen + burst limit, **visit scheduling** (physical/video) with
+  confirm/complete, **visit-gated property ratings** (RLS-enforced), report/
+  moderation queue, and an **owner dashboard** (views, leads, conversions).
+
+Next: **Slice D — Super Admin console** (RBAC, moderation, dynamic form/geo/
+config editing, feature flags, CMS, audit log).
