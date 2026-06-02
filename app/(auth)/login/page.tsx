@@ -37,62 +37,92 @@ export default function LoginPage() {
     setNotice(null);
   }
 
+  function fail(e: unknown) {
+    setError(
+      e instanceof Error
+        ? `${e.message} — check the app's Supabase URL/key in the host settings.`
+        : "Something went wrong. Please try again.",
+    );
+  }
+
   async function sendCode() {
     setBusy(true);
     reset();
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true },
-    });
-    setBusy(false);
-    if (error) return setError(error.message);
-    setStep("code");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+      if (error) return setError(error.message);
+      setStep("code");
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function verify() {
     setBusy(true);
     reset();
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code,
-      type: "email",
-    });
-    setBusy(false);
-    if (error) return setError(error.message);
-    router.push("/");
-    router.refresh();
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: "email",
+      });
+      if (error) return setError(error.message);
+      router.push("/");
+      router.refresh();
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function signInWithPassword() {
     setBusy(true);
     reset();
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setBusy(false);
-    if (error) return setError(error.message);
-    router.push("/");
-    router.refresh();
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) return setError(error.message);
+      router.push("/");
+      router.refresh();
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function signUpWithPassword() {
     setBusy(true);
     reset();
-    const supabase = createSupabaseBrowserClient();
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    setBusy(false);
-    if (error) return setError(error.message);
-    if (data.session) {
-      // Email confirmation is disabled → signed in immediately.
-      router.push("/");
-      router.refresh();
-    } else {
-      // Email confirmation is on → user must click the link first.
-      setNotice("Account created. Check your email to confirm, then sign in.");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) return setError(error.message);
+      if (data.session) {
+        // Email confirmation is disabled → signed in immediately.
+        router.push("/");
+        router.refresh();
+      } else {
+        // Email confirmation is on → user must click the link first.
+        setNotice(
+          "Account created. Check your email to confirm, then sign in.",
+        );
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
     }
   }
 
