@@ -1,10 +1,18 @@
 "use client";
 
+import {
+  Building2,
+  CheckCircle2,
+  Flag,
+  Home,
+  MessageSquare,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
 import type { PlatformStats } from "@/lib/services/admin";
+import { cn } from "@/lib/utils";
 
 export default function AdminOverviewPage() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
@@ -22,38 +30,82 @@ export default function AdminOverviewPage() {
     };
   }, []);
 
+  const cards = stats
+    ? [
+        { label: "Users", value: stats.users, icon: Users, tone: "teal" },
+        {
+          label: "Active listings",
+          value: stats.listings.active,
+          icon: Home,
+          tone: "teal",
+        },
+        {
+          label: "Total listings",
+          value: stats.listings.total,
+          icon: Building2,
+          tone: "slate",
+        },
+        {
+          label: "Enquiries",
+          value: stats.enquiries,
+          icon: MessageSquare,
+          tone: "slate",
+        },
+        {
+          label: "Pending verifications",
+          value: stats.pendingVerifications,
+          icon: CheckCircle2,
+          tone: "gold",
+        },
+        {
+          label: "Open reports",
+          value: stats.openReports,
+          icon: Flag,
+          tone: "rose",
+        },
+      ]
+    : [];
+
   return (
     <section>
-      <h1 className="text-2xl font-bold">Overview</h1>
+      <h2 className="text-2xl font-bold">Overview</h2>
+      <p className="text-muted-foreground mt-1">
+        A live snapshot of the platform.
+      </p>
+
       {error && (
         <p className="border-warning/40 bg-warning/10 mt-4 rounded-md border p-3 text-sm">
           {error}
         </p>
       )}
-      {stats && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Stat label="Users" value={stats.users} />
-          <Stat label="Active listings" value={stats.listings.active} />
-          <Stat label="Total listings" value={stats.listings.total} />
-          <Stat label="Enquiries" value={stats.enquiries} />
-          <Stat
-            label="Pending verifications"
-            value={stats.pendingVerifications}
-          />
-          <Stat label="Open reports" value={stats.openReports} />
-        </div>
-      )}
-    </section>
-  );
-}
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="text-3xl font-bold">{value}</div>
-        <div className="text-muted-foreground text-sm">{label}</div>
-      </CardContent>
-    </Card>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cards.map((c) => (
+          <div
+            key={c.label}
+            className="bg-card shadow-soft hover:shadow-lift rounded-2xl border p-5 transition-shadow"
+          >
+            <span
+              className={cn(
+                "flex size-10 items-center justify-center rounded-xl",
+                c.tone === "teal" && "bg-accent text-accent-foreground",
+                c.tone === "slate" && "bg-secondary text-secondary-foreground",
+                c.tone === "gold" && "bg-gold/15 text-gold",
+                c.tone === "rose" && "bg-destructive/10 text-destructive",
+              )}
+            >
+              <c.icon className="size-5" />
+            </span>
+            <div className="mt-4 text-3xl font-bold tabular-nums">
+              {c.value}
+            </div>
+            <div className="text-muted-foreground text-sm">{c.label}</div>
+          </div>
+        ))}
+        {!stats && !error && (
+          <div className="text-muted-foreground text-sm">Loading…</div>
+        )}
+      </div>
+    </section>
   );
 }
