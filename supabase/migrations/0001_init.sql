@@ -192,6 +192,9 @@ create trigger trg_listings_tsv before insert or update of title, description
 
 create table locations (
   listing_id uuid primary key references listings (id) on delete cascade,
+  -- lat/lng are the API-facing source of truth; geom is derived for indexing.
+  lat        double precision,
+  lng        double precision,
   geom       geography(point, 4326),         -- precise pin (revealed on consent)
   address    text,                            -- exact address (hidden until reveal)
   locality   text,
@@ -203,6 +206,21 @@ create table locations (
 create index idx_locations_geom    on locations using gist (geom);
 create index idx_locations_pincode on locations (pincode);
 create index idx_locations_city    on locations using gin (city gin_trgm_ops);
+
+-- Keep geom in sync with lat/lng so spatial queries and the API agree.
+create or replace function locations_sync_geom()
+returns trigger language plpgsql as $$
+begin
+  if new.lat is not null and new.lng is not null then
+    new.geom := st_setsrid(st_makepoint(new.lng, new.lat), 4326)::geography;
+  else
+    new.geom := null;
+  end if;
+  return new;
+end;
+$$;
+create trigger trg_locations_geom before insert or update of lat, lng
+  on locations for each row execute function locations_sync_geom();
 
 create table media (
   id         uuid primary key default gen_random_uuid(),

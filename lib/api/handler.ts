@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { NextRequest, NextResponse } from "next/server";
-import { ZodError, type ZodSchema } from "zod";
+import { z, ZodError } from "zod";
 
 import { fail } from "./envelope";
 import { ApiError, ErrorCode } from "./errors";
@@ -57,10 +57,10 @@ function renderError(err: unknown, requestId: string): NextResponse {
 }
 
 /** Parse + validate a JSON request body, throwing a ZodError on failure. */
-export async function parseJson<T>(
+export async function parseJson<S extends z.ZodTypeAny>(
   req: NextRequest,
-  schema: ZodSchema<T>,
-): Promise<T> {
+  schema: S,
+): Promise<z.infer<S>> {
   let raw: unknown;
   try {
     raw = await req.json();
@@ -71,7 +71,10 @@ export async function parseJson<T>(
 }
 
 /** Parse + validate URL search params against a schema. */
-export function parseQuery<T>(req: NextRequest, schema: ZodSchema<T>): T {
+export function parseQuery<S extends z.ZodTypeAny>(
+  req: NextRequest,
+  schema: S,
+): z.infer<S> {
   const obj = Object.fromEntries(req.nextUrl.searchParams.entries());
   return schema.parse(obj);
 }

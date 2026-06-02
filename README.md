@@ -89,7 +89,15 @@ curl http://localhost:3000/api/v1/health
 
 ## Status
 
-**Phase 0 — Foundations** complete: app scaffold, design system, Supabase
-schema + RLS + seed, auth/session + RBAC helpers, the `/api/v1` envelope/error
-framework, OpenAPI contract, and CI. Next: **Slice A — Listing → Search →
-Detail** (see the development plan).
+- **Phase 0 — Foundations** ✅ — app scaffold, design system, Supabase schema +
+  RLS + seed, auth/session + RBAC helpers, `/api/v1` envelope/error framework,
+  OpenAPI contract, CI.
+- **Slice A — Listing → Search → Detail** ✅ — category-specific listing wizard
+  driven by form templates (incl. land + registration fields), draft → publish
+  lifecycle with completeness checks, media attach, faceted + pincode + PostGIS
+  radius search with keyset pagination, and the public listing detail page
+  (address masked until consent). Service layer is framework-agnostic and
+  unit-tested (19 tests).
+
+Next: **Slice B — Profiles** (seeker + agent/broker branded pages), then
+**Slice C — Connect + Trust** (consent reveal, chat, visits, visit-gated ratings).
