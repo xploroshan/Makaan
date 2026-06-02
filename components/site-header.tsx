@@ -1,44 +1,48 @@
 import Link from "next/link";
+import { Home } from "lucide-react";
 
-import { LogoutButton } from "@/components/logout-button";
+import { AccountMenu } from "@/components/account-menu";
 import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/lib/auth/session";
 
-/** Top navigation with auth-aware actions. */
+/** Sticky, glassy, auth-aware top navigation. */
 export async function SiteHeader() {
   const user = await getSessionUser();
-  const isAdmin = user?.roles.includes("admin");
+  const isAdmin = user?.roles.includes("admin") ?? false;
 
   return (
-    <header className="border-b">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
-        <Link href="/" className="text-primary text-lg font-bold">
-          Dwello
+    <header className="glass border-border/60 sticky top-0 z-40 border-b">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="bg-brand-gradient text-primary-foreground shadow-soft flex size-8 items-center justify-center rounded-lg">
+            <Home className="size-4" />
+          </span>
+          <span className="font-display text-xl font-extrabold tracking-tight">
+            Dwello
+          </span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
-          <Button asChild variant="ghost" size="sm">
+
+        <nav className="flex items-center gap-1">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             <Link href="/search">Search</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             <Link href="/owner/listings/new">List property</Link>
           </Button>
           {user ? (
-            <>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/account/activity">Activity</Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/chats">Chats</Link>
-              </Button>
-              {isAdmin && (
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/admin">Admin</Link>
-                </Button>
-              )}
-              <LogoutButton />
-            </>
+            <AccountMenu email={user.email} isAdmin={isAdmin} />
           ) : (
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="rounded-full px-5">
               <Link href="/login">Sign in</Link>
             </Button>
           )}

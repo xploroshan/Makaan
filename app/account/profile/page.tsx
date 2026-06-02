@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
+import { createSupabaseBrowserClient } from "@/lib/db/supabase-browser";
 import type { MyProfile } from "@/lib/services/profiles";
 import { DEFAULT_SEEKER_PRIVACY } from "@/lib/types/profile";
 
@@ -28,6 +29,7 @@ export default function AccountProfilePage() {
     cleanliness: "",
   });
   const [evidence, setEvidence] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   useEffect(() => {
     apiFetch<MyProfile>("/api/v1/me/profile")
@@ -76,6 +78,23 @@ export default function AccountProfilePage() {
       setEvidence("");
     } catch (e) {
       setMsg(e instanceof ApiClientError ? e.message : "Submit failed");
+    }
+  }
+
+  async function changePassword() {
+    setMsg(null);
+    if (newPassword.length < 6) {
+      return setMsg("Password must be at least 6 characters.");
+    }
+    try {
+      const { error } = await createSupabaseBrowserClient().auth.updateUser({
+        password: newPassword,
+      });
+      if (error) return setMsg(error.message);
+      setNewPassword("");
+      setMsg("Password updated. You can now sign in with it.");
+    } catch {
+      setMsg("Could not update password.");
     }
   }
 
@@ -259,6 +278,29 @@ export default function AccountProfilePage() {
               Submit ownership
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Password &amp; security</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-muted-foreground text-sm">
+            Set or change your password. If you signed in with an email code,
+            set a password here so you can also sign in with email + password.
+          </p>
+          <Label htmlFor="newpw">New password</Label>
+          <Input
+            id="newpw"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="At least 6 characters"
+          />
+          <Button onClick={changePassword} disabled={newPassword.length < 6}>
+            Update password
+          </Button>
         </CardContent>
       </Card>
 
