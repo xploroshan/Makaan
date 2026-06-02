@@ -9,6 +9,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/search?transaction_type=sale", label: "Homes for sale" },
       { href: "/search?transaction_type=coliving", label: "Co-living & PG" },
       { href: "/search?property_type=land", label: "Plots & land" },
+      { href: "/flatmates", label: "Find a flatmate" },
     ],
   },
   {

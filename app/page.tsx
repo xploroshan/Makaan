@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Sparkles,
   Trees,
+  Users,
 } from "lucide-react";
 
 import { HeroSearch } from "@/components/home/hero-search";
@@ -30,6 +31,7 @@ const CATEGORIES = [
     label: "Co-living / PG",
     icon: MessageSquareLock,
   },
+  { href: "/flatmates", label: "Find a flatmate", icon: Users },
   { href: "/search?property_type=land", label: "Plots & land", icon: Trees },
   { href: "/search?view=map", label: "Map search", icon: MapPin },
 ];

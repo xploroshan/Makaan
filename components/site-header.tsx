@@ -38,6 +38,14 @@ export async function SiteHeader() {
             size="sm"
             className="hidden sm:inline-flex"
           >
+            <Link href="/flatmates">Flatmates</Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             <Link href="/owner/listings/new">List property</Link>
           </Button>
           <Button
