@@ -38,6 +38,7 @@ export function AccountMenu({
 
   const items: { href: string; label: string }[] = [
     { href: "/account/profile", label: "Profile & security" },
+    { href: "/account/alerts", label: "Saved searches & alerts" },
     { href: "/account/activity", label: "Activity" },
     { href: "/chats", label: "Messages" },
     { href: "/owner/dashboard", label: "Owner dashboard" },

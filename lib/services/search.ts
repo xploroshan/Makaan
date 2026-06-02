@@ -64,11 +64,15 @@ type SummaryRow = {
 export async function searchListings(
   supabase: DbClient,
   q: SearchQuery,
+  options: { since?: string } = {},
 ): Promise<SearchResult> {
   let query = supabase
     .from("listings")
     .select(SUMMARY_SELECT)
     .eq("status", "active");
+
+  // Saved-search alerts: only listings published after the last check.
+  if (options.since) query = query.gt("created_at", options.since);
 
   // --- facets ---
   if (q.transaction_type)

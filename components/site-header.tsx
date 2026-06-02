@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 
 import { AccountMenu } from "@/components/account-menu";
+import { NotificationBell } from "@/components/notification-bell";
 import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/lib/auth/session";
 
@@ -40,7 +41,10 @@ export async function SiteHeader() {
             <Link href="/owner/listings/new">List property</Link>
           </Button>
           {user ? (
-            <AccountMenu email={user.email} isAdmin={isAdmin} />
+            <>
+              <NotificationBell />
+              <AccountMenu email={user.email} isAdmin={isAdmin} />
+            </>
           ) : (
             <Button asChild size="sm" className="rounded-full px-5">
               <Link href="/login">Sign in</Link>
