@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ListingCard } from "@/components/listings/listing-card";
 import { NlSearchBox } from "@/components/search/nl-search-box";
+import { SaveSearchButton } from "@/components/search/save-search-button";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Button } from "@/components/ui/button";
 import { isFeatureEnabled } from "@/lib/config/flags";
@@ -72,6 +73,14 @@ export default async function SearchPage({
 
       {nlEnabled && <NlSearchBox />}
       <SearchFilters defaults={raw} />
+
+      <div className="mt-3 flex justify-end">
+        <SaveSearchButton
+          filters={Object.fromEntries(
+            Object.entries(raw).filter(([k]) => k !== "cursor" && k !== "sort"),
+          )}
+        />
+      </div>
 
       {error && (
         <p className="border-warning/40 bg-warning/10 mt-6 rounded-xl border p-4 text-sm">
