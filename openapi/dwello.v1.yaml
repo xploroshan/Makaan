@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Dwello API
+  version: "1.0.0"
+  description: >
+    The single shared, versioned API consumed identically by the Dwello web,
+    Android and iOS clients. All responses use a consistent envelope.
+servers:
+  - url: /api/v1
+    description: Versioned API root
+tags:
+  - name: auth
+  - name: listings
+  - name: search
+  - name: connect
+  - name: agents
+  - name: trust
+  - name: admin
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Meta:
+      type: object
+      required: [requestId]
+      properties:
+        requestId: { type: string }
+        nextCursor: { type: string, nullable: true }
+    Error:
+      type: object
+      required: [error, meta]
+      properties:
+        meta: { $ref: "#/components/schemas/Meta" }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                [
+                  validation_error,
+                  unauthenticated,
+                  forbidden,
+                  not_found,
+                  conflict,
+                  rate_limited,
+                  idempotency_conflict,
+                  internal_error,
+                ]
+            message: { type: string }
+            details: {}
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      tags: [auth]
+      summary: Liveness probe
+      security: []
+      responses:
+        "200": { description: Service healthy }
+  /auth/otp/request:
+    post:
+      tags: [auth]
+      summary: Request an OTP
+      security: []
+      responses: { "200": { description: OTP sent } }
+  /auth/otp/verify:
+    post:
+      tags: [auth]
+      summary: Verify OTP and issue tokens
+      security: []
+      responses: { "200": { description: Tokens issued } }
+  /me:
+    get:
+      tags: [auth]
+      summary: Current profile
+      responses:
+        "200": { description: Current user }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /listings:
+    post:
+      tags: [listings]
+      summary: Create a listing (draft)
+      responses:
+        "201": { description: Created }
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /listings/{id}:
+    get:
+      tags: [listings]
+      summary: Listing detail
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: Listing detail }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [listings]
+      summary: Update / publish a listing
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { "200": { description: Updated } }
+  /listings/{id}/media:
+    post:
+      tags: [listings]
+      summary: Attach media (photo/video/360)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { "201": { description: Media attached } }
+  /listings/{id}/status:
+    post:
+      tags: [listings]
+      summary: Change lifecycle (pause / mark rented-sold)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { "200": { description: Status changed } }
+  /listings/{id}/ratings:
+    post:
+      tags: [trust]
+      summary: Rate a property (visit-gated)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "201": { description: Rating recorded }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /search:
+    get:
+      tags: [search]
+      summary: Faceted + geo + pincode + NL search
+      security: []
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: pincode, in: query, schema: { type: string } }
+        - { name: lat, in: query, schema: { type: number } }
+        - { name: lng, in: query, schema: { type: number } }
+        - { name: radius_m, in: query, schema: { type: integer } }
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 20 } }
+      responses: { "200": { description: Search results } }
+  /search/saved:
+    post:
+      tags: [search]
+      summary: Save a search + alert
+      responses: { "201": { description: Saved } }
+  /enquiries:
+    post:
+      tags: [connect]
+      summary: Express interest in a listing
+      responses: { "201": { description: Enquiry created } }
+  /enquiries/{id}/consent:
+    post:
+      tags: [connect]
+      summary: Owner accepts → reveal contact
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { "200": { description: Contact revealed } }
+  /visits:
+    post:
+      tags: [connect]
+      summary: Schedule a visit (physical/video)
+      responses: { "201": { description: Visit scheduled } }
+  /agents:
+    post:
+      tags: [agents]
+      summary: Register an agent / company
+      responses: { "201": { description: Agent registered } }
+  /agents/{id}:
+    get:
+      tags: [agents]
+      summary: Public agent / broker profile
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { "200": { description: Agent profile } }
+  /admin/config:
+    get:
+      tags: [admin]
+      summary: Read dynamic config & feature flags
+      responses: { "200": { description: Config } }
+    put:
+      tags: [admin]
+      summary: Update dynamic config & feature flags (RBAC)
+      responses: { "200": { description: Updated } }
+  /admin/forms/{template}:
+    put:
+      tags: [admin]
+      summary: Edit a listing form template (RBAC)
+      parameters:
+        - { name: template, in: path, required: true, schema: { type: string } }
+      responses: { "200": { description: Template updated } }
