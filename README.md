@@ -99,5 +99,12 @@ curl http://localhost:3000/api/v1/health
   (address masked until consent). Service layer is framework-agnostic and
   unit-tested (19 tests).
 
-Next: **Slice B — Profiles** (seeker + agent/broker branded pages), then
-**Slice C — Connect + Trust** (consent reveal, chat, visits, visit-gated ratings).
+- **Slice B — Profiles** ✅ — rich seeker profile with **privacy controls**
+  (public fields are filtered server-side), lifestyle profile for co-living
+  matching, agent/broker **branded pages** (banner, logo, brokerage, areas
+  served, portfolio, ratings) with self-service registration + reviews
+  (aggregated rating via trigger), and **verification badges** (identity /
+  ownership). Includes a role-escalation guard so users can't self-assign admin.
+
+Next: **Slice C — Connect + Trust** (consent-based contact reveal, real-time
+chat, visit scheduling, visit-gated ratings, owner/agent dashboard).
