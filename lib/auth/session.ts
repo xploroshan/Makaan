@@ -1,5 +1,3 @@
-import type { User } from "@supabase/supabase-js";
-
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
 import { ApiError } from "@/lib/api/errors";
 
@@ -12,26 +10,32 @@ export interface SessionUser {
   roles: AppRole[];
 }
 
-function toSessionUser(user: User): SessionUser {
-  const roles = (user.app_metadata?.roles as AppRole[] | undefined) ?? [
-    "seeker",
-  ];
-  return {
-    id: user.id,
-    email: user.email ?? null,
-    phone: user.phone ?? null,
-    roles,
-  };
-}
-
-/** Returns the authenticated user or null. Never throws. */
+/**
+ * Returns the authenticated user or null. Never throws.
+ * Roles are read from `public.users.roles` (the source of truth used by RLS
+ * and the admin bootstrap), NOT from the JWT's app_metadata.
+ */
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    return user ? toSessionUser(user) : null;
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("roles")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const roles = (profile?.roles as AppRole[] | undefined) ?? ["seeker"];
+    return {
+      id: user.id,
+      email: user.email ?? null,
+      phone: user.phone ?? null,
+      roles,
+    };
   } catch {
     // Supabase not configured / unreachable — treat as signed out.
     return null;
