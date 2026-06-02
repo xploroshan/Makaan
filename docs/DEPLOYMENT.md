@@ -63,7 +63,8 @@ order using Supabase's built-in SQL editor.
    3. `supabase/migrations/0003_profiles.sql`
    4. `supabase/migrations/0004_connect.sql`
    5. `supabase/migrations/0005_admin.sql`
-   6. `supabase/seed/seed.sql` ← this one adds starter cities + listing forms
+   6. `supabase/migrations/0006_superadmin.sql` ← makes the founder account a super admin
+   7. `supabase/seed/seed.sql` ← this one adds starter cities + listing forms
 
    > 🔗 Tip: on GitHub, open the file, click the **Raw** button, then select-all
    > and copy — that gives you clean text to paste.
@@ -164,20 +165,23 @@ So login redirects work correctly:
 1. Visit your live site and click **Sign in** (top right).
 2. Enter your email → you'll get a 6-digit code by email → enter it. You're in.
 
-### 4.2 Give your account admin powers
+### 4.2 Admin powers
 
-New accounts are regular users. To unlock the admin console, run one small command:
+The founder account **`roshan.manuel@gmail.com`** is promoted to super admin
+automatically — migration `0006_superadmin.sql` grants it the `admin` role the
+moment that account signs in. Just sign in with that email and refresh; an
+**Admin** link appears in the top bar. No SQL needed.
 
-1. Supabase → **SQL Editor** → New query.
-2. Paste this, replacing the email with the one you just signed in with:
+To make **any other** account an admin, run this in Supabase → **SQL Editor**
+(replace the email with the one that signed in):
 
-   ```sql
-   update public.users
-   set roles = '{seeker,owner,admin}'
-   where email = 'you@example.com';
-   ```
+```sql
+update public.users
+set roles = '{seeker,owner,admin}'
+where email = 'someone@example.com';
+```
 
-3. Click **Run**. Then on the website, refresh — an **Admin** link appears in the top bar.
+Then have them sign out and back in (roles are read at sign-in).
 
 ### 4.3 (Optional) Turn on the AI features
 
