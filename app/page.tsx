@@ -13,7 +13,9 @@ import {
 import { HeroSearch } from "@/components/home/hero-search";
 import { ListingCard } from "@/components/listings/listing-card";
 import { Button } from "@/components/ui/button";
+import { getSessionUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
+import { recommendedForUser } from "@/lib/services/recommendations";
 import { searchListings } from "@/lib/services/search";
 import { searchQuerySchema } from "@/lib/validation/search";
 import type { ListingSummary } from "@/lib/types/listing";
@@ -58,8 +60,22 @@ async function getFeatured(): Promise<ListingSummary[]> {
   }
 }
 
+async function getRecommended(): Promise<ListingSummary[]> {
+  try {
+    const viewer = await getSessionUser();
+    if (!viewer) return [];
+    const supabase = await createSupabaseServerClient();
+    return await recommendedForUser(supabase, viewer.id);
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const featured = await getFeatured();
+  const [featured, recommended] = await Promise.all([
+    getFeatured(),
+    getRecommended(),
+  ]);
 
   return (
     <main className="flex flex-1 flex-col">
@@ -97,6 +113,30 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Recommended for you */}
+      {recommended.length > 0 && (
+        <section className="mx-auto w-full max-w-6xl px-6 pt-16">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <h2 className="text-2xl font-bold sm:text-3xl">
+                Recommended for you
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                Picked from your saved searches and recent activity.
+              </p>
+            </div>
+            <Button asChild variant="outline" className="hidden sm:inline-flex">
+              <Link href="/account/alerts">Manage alerts</Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {recommended.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Featured listings */}
       {featured.length > 0 && (

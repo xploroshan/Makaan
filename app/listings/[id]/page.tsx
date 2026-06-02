@@ -13,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { InterestButton } from "@/components/listings/interest-button";
+import { ListingCard } from "@/components/listings/listing-card";
 import { Badge } from "@/components/ui/badge";
 import { Stars } from "@/components/ui/stars";
 import { ApiError } from "@/lib/api/errors";
@@ -24,7 +25,8 @@ import { resolveTemplate } from "@/lib/services/form-templates";
 import { getListingDetail } from "@/lib/services/listings";
 import { listListingRatings } from "@/lib/services/ratings";
 import type { RatingWithAuthor } from "@/lib/services/ratings";
-import type { ListingDetail } from "@/lib/types/listing";
+import { similarListings } from "@/lib/services/recommendations";
+import type { ListingDetail, ListingSummary } from "@/lib/types/listing";
 
 type Params = { id: string };
 
@@ -38,6 +40,7 @@ export default async function ListingDetailPage({
   let listing: ListingDetail;
   let labels: Record<string, string> = {};
   let ratings: RatingWithAuthor[] = [];
+  let similar: ListingSummary[] = [];
   let isOwner = false;
   try {
     const viewer = await getSessionUser();
@@ -69,6 +72,15 @@ export default async function ListingDetailPage({
       (template?.fields ?? []).map((f) => [f.key, f.label]),
     );
     ratings = ratingList;
+
+    similar = await similarListings(supabase, {
+      id,
+      transaction_type: listing.transaction_type,
+      property_type: listing.property_type,
+      price: listing.price,
+      city: listing.location?.city ?? null,
+      pincode: listing.location?.pincode ?? null,
+    });
   } catch (err) {
     if (err instanceof ApiError && err.code === "not_found") notFound();
     return (
@@ -285,6 +297,21 @@ export default async function ListingDetailPage({
           </div>
         </aside>
       </div>
+
+      {similar.length > 0 && (
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold">Similar homes</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            More {transactionLabel(listing.transaction_type).toLowerCase()}{" "}
+            options in {listing.location?.city ?? "the area"}.
+          </p>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {similar.map((item) => (
+              <ListingCard key={item.id} listing={item} />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
