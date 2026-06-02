@@ -62,7 +62,9 @@ create policy agent_reviews_delete on agent_reviews for delete
 create or replace function prevent_role_escalation()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  if not is_admin() then
+  -- Only an authenticated, non-admin user is blocked from gaining admin.
+  -- The trusted backend (service role; auth.uid() is null) and admins may.
+  if auth.uid() is not null and not is_admin() then
     if ('admin' = any (new.roles)) and not ('admin' = any (old.roles)) then
       raise exception 'cannot self-assign admin role';
     end if;

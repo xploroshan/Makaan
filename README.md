@@ -113,5 +113,12 @@ curl http://localhost:3000/api/v1/health
   confirm/complete, **visit-gated property ratings** (RLS-enforced), report/
   moderation queue, and an **owner dashboard** (views, leads, conversions).
 
-Next: **Slice D — Super Admin console** (RBAC, moderation, dynamic form/geo/
-config editing, feature flags, CMS, audit log).
+- **Slice D — Super Admin console** ✅ — RBAC-gated `/admin` with platform
+  analytics, user management (suspend/ban/roles), listing moderation
+  (approve/reject/feature/remove), verification + agent-badge review, reports
+  queue, **dynamic no-deploy editing** of form templates, geography/pincodes,
+  and feature-flag/pricing/CMS config, plus an immutable **audit log** of every
+  admin action.
+
+**Phase 1 (MVP) is feature-complete.** Next: provision Supabase and validate
+end-to-end, then Phase 2 (digital agreements, payments, AI assist/NL-search).
