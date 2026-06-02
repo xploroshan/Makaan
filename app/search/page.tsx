@@ -1,3 +1,4 @@
+import { SearchX } from "lucide-react";
 import Link from "next/link";
 
 import { ListingCard } from "@/components/listings/listing-card";
@@ -49,12 +50,22 @@ export default async function SearchPage({
   }
 
   const nlEnabled = await isFeatureEnabled("feature.nl_search");
+  const where = raw.city || raw.pincode;
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Find a home</h1>
-        <Button asChild variant="outline">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {where ? `Homes in ${where}` : "Find a home"}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {result.items.length > 0
+              ? `Showing ${result.items.length} listing${result.items.length === 1 ? "" : "s"}`
+              : "Browse verified, broker-free listings"}
+          </p>
+        </div>
+        <Button asChild variant="outline" className="rounded-full">
           <Link href="/owner/listings/new">List your property</Link>
         </Button>
       </div>
@@ -63,17 +74,26 @@ export default async function SearchPage({
       <SearchFilters defaults={raw} />
 
       {error && (
-        <p className="border-warning/40 bg-warning/10 mt-6 rounded-md border p-4 text-sm">
+        <p className="border-warning/40 bg-warning/10 mt-6 rounded-xl border p-4 text-sm">
           {error}
         </p>
       )}
 
       {result.items.length === 0 && !error ? (
-        <p className="text-muted-foreground mt-10 text-center">
-          No listings match your search yet.
-        </p>
+        <div className="mt-12 flex flex-col items-center text-center">
+          <span className="bg-secondary text-muted-foreground flex size-16 items-center justify-center rounded-2xl">
+            <SearchX className="size-8" />
+          </span>
+          <p className="mt-4 font-medium">No listings match your search yet</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Try widening your filters, or be the first to list here.
+          </p>
+          <Button asChild className="mt-5 rounded-full px-6">
+            <Link href="/owner/listings/new">List a property</Link>
+          </Button>
+        </div>
       ) : (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {result.items.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
@@ -81,8 +101,8 @@ export default async function SearchPage({
       )}
 
       {result.nextCursor && (
-        <div className="mt-8 flex justify-center">
-          <Button asChild variant="outline">
+        <div className="mt-10 flex justify-center">
+          <Button asChild variant="outline" className="rounded-full px-8">
             <Link
               href={`/search?${new URLSearchParams({ ...raw, cursor: result.nextCursor }).toString()}`}
             >
