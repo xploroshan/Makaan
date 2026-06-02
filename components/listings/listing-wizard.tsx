@@ -100,6 +100,28 @@ export function ListingWizard() {
     if (ok !== undefined) setStep("media");
   }
 
+  async function generateWithAi() {
+    const copy = await run(() =>
+      apiFetch<{ title: string; description: string }>(
+        "/api/v1/ai/listing-assist",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            transaction_type: transaction,
+            property_type: property,
+            attributes: buildAttributes(template?.fields ?? [], values),
+            locality: location.locality || undefined,
+            city: location.city || undefined,
+          }),
+        },
+      ),
+    );
+    if (copy) {
+      setTitle(copy.title);
+      setDescription(copy.description);
+    }
+  }
+
   async function addMedia() {
     if (!listing || !mediaUrl) return;
     const row = await run(() =>
@@ -188,7 +210,19 @@ export function ListingWizard() {
             />
           </div>
           <div>
-            <Label htmlFor="desc">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="desc">Description</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={generateWithAi}
+                disabled={busy}
+                title="Fill in the details below first for the best result"
+              >
+                ✨ Generate with AI
+              </Button>
+            </div>
             <Textarea
               id="desc"
               value={description}

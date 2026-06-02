@@ -120,5 +120,18 @@ curl http://localhost:3000/api/v1/health
   and feature-flag/pricing/CMS config, plus an immutable **audit log** of every
   admin action.
 
-**Phase 1 (MVP) is feature-complete.** Next: provision Supabase and validate
-end-to-end, then Phase 2 (digital agreements, payments, AI assist/NL-search).
+**Phase 1 (MVP) is feature-complete.**
+
+### Phase 2 (in progress)
+
+- **AI — listing assist + natural-language search** ✅ — Claude (`claude-opus-4-8`,
+  structured outputs) generates listing titles/descriptions from attributes, and
+  parses free-text queries ("2BHK under 30k near a metro in Pune, pet friendly")
+  into structured filters. Both are **feature-flag gated**
+  (`feature.ai_listing_assist`, `feature.nl_search` — toggle live in the admin
+  console) and fail closed when AI isn't configured. Set `ANTHROPIC_API_KEY` to
+  enable.
+
+Remaining Phase 2: digital agreements (e-stamp/e-sign partner), online rent
+payment (payment partner), tenant verification (KYC partner), saved-search
+alerts, two-way reviews. The first three await provider selection.

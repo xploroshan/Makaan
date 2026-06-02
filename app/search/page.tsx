@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { ListingCard } from "@/components/listings/listing-card";
+import { NlSearchBox } from "@/components/search/nl-search-box";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Button } from "@/components/ui/button";
+import { isFeatureEnabled } from "@/lib/config/flags";
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
 import { searchListings, type SearchResult } from "@/lib/services/search";
 import { searchQuerySchema } from "@/lib/validation/search";
@@ -46,6 +48,8 @@ export default async function SearchPage({
     error = "Some filters were invalid; showing defaults.";
   }
 
+  const nlEnabled = await isFeatureEnabled("feature.nl_search");
+
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <div className="mb-6 flex items-center justify-between">
@@ -55,6 +59,7 @@ export default async function SearchPage({
         </Button>
       </div>
 
+      {nlEnabled && <NlSearchBox />}
       <SearchFilters defaults={raw} />
 
       {error && (

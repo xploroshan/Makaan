@@ -18,14 +18,17 @@ async function load(): Promise<Map<string, ConfigRow>> {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
     return cache.rows;
   }
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("app_config")
-    .select("key, value, enabled");
-
   const rows = new Map<string, ConfigRow>();
-  if (!error && data) {
-    for (const row of data as ConfigRow[]) rows.set(row.key, row);
+  try {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("app_config")
+      .select("key, value, enabled");
+    if (!error && data) {
+      for (const row of data as ConfigRow[]) rows.set(row.key, row);
+    }
+  } catch {
+    // Supabase not configured / unreachable — fail closed (use fallbacks).
   }
   cache = { at: Date.now(), rows };
   return rows;
