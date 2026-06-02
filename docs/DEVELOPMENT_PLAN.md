@@ -9,7 +9,7 @@ Android, iOS — over one shared, versioned API and a common database**. The
 brief: build the **Web Application first**, then reuse the same API to build the
 Android and iOS apps.
 
-**Intended outcome of this document.** A phased, executable plan for the *web*
+**Intended outcome of this document.** A phased, executable plan for the _web_
 build that (a) ships the PRD's Phase-1 (MVP) value, and (b) leaves a clean,
 client-agnostic `/api/v1` contract so the future mobile apps consume the exact
 same backend with zero rework.
@@ -54,8 +54,8 @@ External: Claude API (listing assist, NL search — P2) · Map tiles ·
 
 **Key principle for mobile-readiness:** all business logic lives in a
 **framework-agnostic service layer** (`lib/services/*`) and is exposed through
-`/api/v1` route handlers. Next.js Server Components/Actions call the *same
-services* — never duplicate logic in UI. When mobile work starts, the API is
+`/api/v1` route handlers. Next.js Server Components/Actions call the _same
+services_ — never duplicate logic in UI. When mobile work starts, the API is
 already the single source of truth (extractable to a standalone service later
 with no contract change, per the PRD's "modular monolith now, microservices later").
 
@@ -63,23 +63,23 @@ with no contract change, per the PRD's "modular monolith now, microservices late
 
 ## 2. Technology Stack (web phase)
 
-| Concern | Choice | Notes |
-|---|---|---|
-| Framework | **Next.js (App Router, TypeScript)** | SSR/SEO for city/locality landing pages (GTM需要), PWA-installable. |
-| API | **Route handlers under `/app/api/v1`** | Versioned, REST, OpenAPI spec generated/maintained as source of truth. |
-| DB | **Supabase Postgres + PostGIS** | JSONB for flexible/category-specific attributes; `geography` columns + GIST indexes for geo. |
-| Auth | **Supabase Auth** | Phone OTP, Google, Apple, email; JWT; refresh rotation. RBAC via custom claims + RLS. |
-| AuthZ | **Postgres RLS** + service-layer checks | Consent-based contact reveal, owner-only edits, admin RBAC enforced at the row level. |
-| Storage/Media | **Supabase Storage + CDN** | Photos/video/360 + documents. Image transform on delivery. |
-| Realtime | **Supabase Realtime** | Chat, presence, live notifications, enquiry status. |
-| Search (MVP) | **Postgres FTS (`tsvector`) + PostGIS + trigram** | Faceted + full-text + geo + pincode. OpenSearch deferred to scale. |
-| Styling/UI | **Tailwind CSS + shadcn/ui + Radix** | Design system, dark mode, WCAG 2.2 AA. |
-| Forms/Validation | **react-hook-form + Zod** | Zod schemas shared by client forms AND `/api/v1` request validation. |
-| State/data | **TanStack Query** | Client cache for search/listing; optimistic updates for chat/shortlist. |
-| Maps | **MapLibre GL / Mapbox or Google Maps** | (Provider decided in Phase 0.) Pins, clustering, draw-to-search. |
-| AI (P2) | **Claude API + pgvector** | Listing assist, NL-search parsing, recommendations. |
-| Hosting | **Vercel** (web) + Supabase (data) | Available tooling; preview deploys per PR. |
-| Tooling | ESLint, Prettier, Vitest + Playwright, GitHub Actions CI | Test gates before deploy; feature flags via `app_config` table. |
+| Concern          | Choice                                                   | Notes                                                                                        |
+| ---------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Framework        | **Next.js (App Router, TypeScript)**                     | SSR/SEO for city/locality landing pages (GTM需要), PWA-installable.                          |
+| API              | **Route handlers under `/app/api/v1`**                   | Versioned, REST, OpenAPI spec generated/maintained as source of truth.                       |
+| DB               | **Supabase Postgres + PostGIS**                          | JSONB for flexible/category-specific attributes; `geography` columns + GIST indexes for geo. |
+| Auth             | **Supabase Auth**                                        | Phone OTP, Google, Apple, email; JWT; refresh rotation. RBAC via custom claims + RLS.        |
+| AuthZ            | **Postgres RLS** + service-layer checks                  | Consent-based contact reveal, owner-only edits, admin RBAC enforced at the row level.        |
+| Storage/Media    | **Supabase Storage + CDN**                               | Photos/video/360 + documents. Image transform on delivery.                                   |
+| Realtime         | **Supabase Realtime**                                    | Chat, presence, live notifications, enquiry status.                                          |
+| Search (MVP)     | **Postgres FTS (`tsvector`) + PostGIS + trigram**        | Faceted + full-text + geo + pincode. OpenSearch deferred to scale.                           |
+| Styling/UI       | **Tailwind CSS + shadcn/ui + Radix**                     | Design system, dark mode, WCAG 2.2 AA.                                                       |
+| Forms/Validation | **react-hook-form + Zod**                                | Zod schemas shared by client forms AND `/api/v1` request validation.                         |
+| State/data       | **TanStack Query**                                       | Client cache for search/listing; optimistic updates for chat/shortlist.                      |
+| Maps             | **MapLibre GL / Mapbox or Google Maps**                  | (Provider decided in Phase 0.) Pins, clustering, draw-to-search.                             |
+| AI (P2)          | **Claude API + pgvector**                                | Listing assist, NL-search parsing, recommendations.                                          |
+| Hosting          | **Vercel** (web) + Supabase (data)                       | Available tooling; preview deploys per PR.                                                   |
+| Tooling          | ESLint, Prettier, Vitest + Playwright, GitHub Actions CI | Test gates before deploy; feature flags via `app_config` table.                              |
 
 ---
 
@@ -136,7 +136,7 @@ Map PRD entities to Postgres tables. MVP tables (later-phase ones noted):
 - `geo` (city, locality, pincode, lat/lng, enabled) — admin-managed catalogue.
 - `app_config` / `feature_flags` (key, value JSONB, scope, enabled, updated_by) — server-driven dynamic control.
 - `audit_log` (actor, action, entity, timestamp, ip) — every admin action.
-- *P2/P3:* `reviews`, `agreements`, `payments`, `rent_ledger`, `bookings`.
+- _P2/P3:_ `reviews`, `agreements`, `payments`, `rent_ledger`, `bookings`.
 
 **RLS posture:** public can read `active` listings (address/contact masked);
 owners write only their own; contact fields exposed only when a matching
@@ -149,6 +149,7 @@ status completed) exists for that seeker+listing.
 ## 5. The Shared `/api/v1` Contract (from PRD §8.2)
 
 Implement REST resources mirroring the PRD so mobile reuses them verbatim:
+
 - **Auth:** `POST /auth/otp/request`, `/auth/otp/verify`, `/auth/refresh`, `GET /me`, `PATCH /me/preferences`.
 - **Listings:** `POST /listings`, `PATCH /listings/{id}`, `GET /listings/{id}`, `POST /listings/{id}/media`, `POST /listings/{id}/status`.
 - **Search:** `GET /search?q=&geo=&pincode=&filters=`, `POST /search/saved`, `GET /recommendations` (P2).
@@ -165,6 +166,7 @@ Zod validation at the edge, idempotency keys on writes, OpenAPI as source of tru
 ## 6. Phased Delivery Roadmap (web)
 
 ### Phase 0 — Foundations (Weeks 0–6 equiv.)
+
 - Repo scaffold (structure §3), Next.js + TS + Tailwind + shadcn/ui design system, dark mode, a11y baseline.
 - Supabase project: enable PostGIS; migration `0001_init` (core tables + RLS + indexes); seed cities/localities/pincodes + form templates.
 - Auth end-to-end (OTP + Google/Apple/email), unified dual-role profile, role context switch, session/device security.
@@ -172,7 +174,9 @@ Zod validation at the edge, idempotency keys on writes, OpenAPI as source of tru
 - CI/CD: GitHub Actions (lint, typecheck, unit, e2e, migration check) + Vercel preview deploys; feature-flag loader from `app_config`.
 
 ### Phase 1 — MVP (the PRD's Phase 1) — built as vertical slices
-**Slice A (FIRST): Listing → Search → Detail** *(user-selected)*
+
+**Slice A (FIRST): Listing → Search → Detail** _(user-selected)_
+
 - Guided **category-specific listing wizard** driven by `form_templates` (rent/lease/co-living/sell flat-house/sell land — incl. land registration fields), Zod validation, auto-save draft, <3-min publish.
 - Media upload (photos/video/360 placeholder) to Supabase Storage; geo-tag (map pin + pincode auto-detect; hide exact address pre-reveal).
 - Search & Discovery: multi-facet filter, **pincode search**, map-based search w/ clustering + radius/near-me (PostGIS), sort/compare, shortlist, recently-viewed, saved searches.
@@ -186,21 +190,25 @@ Zod validation at the edge, idempotency keys on writes, OpenAPI as source of tru
 **Slice D: Super Admin Console** — RBAC; users/listings moderation; **dynamic form-template editor**; geo/pincode/city catalogue; feature flags; pricing/config; CMS for landing/banners/FAQs; audit log. (Server-driven, no-deploy control per PRD §5.10.)
 
 ### Phase 2 — Transactional depth (fast-follow)
+
 Digital agreements, online rent payment (tokenised partner), tenant verification,
 AI listing-assist + NL-search (Claude + pgvector), reviews, alerts (push/email/WhatsApp),
-recommendations, more cities. *Introduce OpenSearch + Redis here if Postgres FTS/cache hit limits.*
+recommendations, more cities. _Introduce OpenSearch + Redis here if Postgres FTS/cache hit limits._
 
 ### Phase 3 — Expansion
+
 Co-living operator tools/occupancy, services marketplace, advanced AI/recommendations,
 multi-language/currency, international pilots.
 
 ### Then — Mobile (Android, iOS)
+
 React Native (or Flutter) clients consuming the unchanged `/api/v1`. Shared
 OpenAPI → generated SDK. No backend rework: parity guaranteed by the single API.
 
 ---
 
 ## 7. Non-Functional Targets (carried from PRD §6.2)
+
 - Search p95 < 500 ms; detail < 1 s; CDN-optimised media; lazy load.
 - TLS 1.3; encryption at rest; RLS + least-privilege; OWASP Top-10; secret management.
 - India DPDP + GDPR alignment; consent management; right-to-erasure.
@@ -210,6 +218,7 @@ OpenAPI → generated SDK. No backend rework: parity guaranteed by the single AP
 ---
 
 ## 8. Verification Strategy (how we'll prove each phase)
+
 - **Unit (Vitest):** service-layer logic — form-template validation, search query
   builder, consent/visit-gating rules, RBAC checks.
 - **Integration:** `/api/v1` route handlers against a local/branch Supabase
@@ -228,6 +237,7 @@ OpenAPI → generated SDK. No backend rework: parity guaranteed by the single AP
 ---
 
 ## 9. Open Items to Resolve at Phase-0 Kickoff (not blocking this plan)
+
 - Map provider (MapLibre+OSM vs Mapbox vs Google) — cost/feature trade-off.
 - Mobile framework (React Native vs Flutter) — decided before mobile phase, not now.
 - SMS/WhatsApp/email provider for OTP + notifications.
@@ -236,6 +246,7 @@ OpenAPI → generated SDK. No backend rework: parity guaranteed by the single AP
 ---
 
 ## 10. First Concrete Steps (when we move from plan → build)
+
 1. Scaffold Next.js + TS + Tailwind + shadcn/ui; commit base design system.
 2. Create Supabase project; enable PostGIS; write `0001_init.sql` (core tables, RLS, GIST/FTS indexes); seed geo + form templates.
 3. Stand up `/api/v1` envelope + auth + Zod + OpenAPI scaffold; wire Supabase Auth (OTP + social).
