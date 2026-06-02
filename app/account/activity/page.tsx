@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { ReviewForm } from "@/components/review-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -85,53 +86,58 @@ export default function ActivityPage() {
             <p className="text-muted-foreground text-sm">No enquiries yet.</p>
           )}
           {received.map((e) => (
-            <div
-              key={e.id}
-              className="flex items-center justify-between gap-2 border-b pb-3 last:border-0"
-            >
-              <div>
-                <div className="font-medium">
-                  {e.listing_title ?? "Listing"}
+            <div key={e.id} className="space-y-2 border-b pb-3 last:border-0">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="font-medium">
+                    {e.listing_title ?? "Listing"}
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    Status: {e.status}
+                    {e.contact_revealed && " · contact shared"}
+                  </div>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  Status: {e.status}
-                  {e.contact_revealed && " · contact shared"}
-                </div>
+                {e.status === "pending" && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        act(
+                          () =>
+                            apiFetch(`/api/v1/enquiries/${e.id}/consent`, {
+                              method: "POST",
+                              body: JSON.stringify({ action: "accept" }),
+                            }),
+                          "Enquiry accepted — contact shared.",
+                        )
+                      }
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        act(
+                          () =>
+                            apiFetch(`/api/v1/enquiries/${e.id}/consent`, {
+                              method: "POST",
+                              body: JSON.stringify({ action: "decline" }),
+                            }),
+                          "Enquiry declined.",
+                        )
+                      }
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                )}
               </div>
-              {e.status === "pending" && (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      act(
-                        () =>
-                          apiFetch(`/api/v1/enquiries/${e.id}/consent`, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "accept" }),
-                          }),
-                        "Enquiry accepted — contact shared.",
-                      )
-                    }
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      act(
-                        () =>
-                          apiFetch(`/api/v1/enquiries/${e.id}/consent`, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "decline" }),
-                          }),
-                        "Enquiry declined.",
-                      )
-                    }
-                  >
-                    Decline
-                  </Button>
-                </div>
+              {e.status === "accepted" && (
+                <ReviewForm
+                  subjectId={e.seeker_id}
+                  subjectLabel="this seeker"
+                />
               )}
             </div>
           ))}
@@ -306,6 +312,9 @@ function SentEnquiry({
           Request visit
         </Button>
       </div>
+      {enquiry.status === "accepted" && enquiry.owner_id && (
+        <ReviewForm subjectId={enquiry.owner_id} subjectLabel="the owner" />
+      )}
     </div>
   );
 }
