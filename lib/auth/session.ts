@@ -26,11 +26,16 @@ function toSessionUser(user: User): SessionUser {
 
 /** Returns the authenticated user or null. Never throws. */
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user ? toSessionUser(user) : null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user ? toSessionUser(user) : null;
+  } catch {
+    // Supabase not configured / unreachable — treat as signed out.
+    return null;
+  }
 }
 
 /** Returns the authenticated user or throws 401. Use to gate protected routes. */
