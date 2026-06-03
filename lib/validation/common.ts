@@ -24,7 +24,7 @@ export const paginationQuery = z.object({
 });
 
 export const transactionType = z.enum(["rent", "lease", "coliving", "sale"]);
-export const propertyType = z.enum(["flat", "house", "land"]);
+export const propertyType = z.enum(["flat", "house", "land", "commercial"]);
 
 export type TransactionType = z.infer<typeof transactionType>;
 export type PropertyType = z.infer<typeof propertyType>;

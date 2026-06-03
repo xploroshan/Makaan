@@ -21,8 +21,26 @@ import type { PropertyType, TransactionType } from "@/lib/validation/common";
 type Step = "category" | "details" | "media" | "review";
 type Values = Record<string, string | boolean>;
 
-const TRANSACTIONS: TransactionType[] = ["rent", "lease", "coliving", "sale"];
-const PROPERTIES: PropertyType[] = ["flat", "house", "land"];
+const TX_LABEL: Record<TransactionType, string> = {
+  rent: "Rent",
+  lease: "Lease",
+  coliving: "Co-living / PG",
+  sale: "Sale",
+};
+const PROP_LABEL: Record<PropertyType, string> = {
+  flat: "Flat / Apartment",
+  house: "House / Villa / Duplex",
+  land: "Land / Plot",
+  commercial: "Commercial",
+};
+const TRANSACTIONS = Object.keys(TX_LABEL) as TransactionType[];
+/** Which property types are valid for each transaction (every combo here has a template). */
+const VALID_PROPERTIES: Record<TransactionType, PropertyType[]> = {
+  rent: ["flat", "house", "commercial", "land"],
+  lease: ["flat", "house", "commercial", "land"],
+  coliving: ["flat", "house"],
+  sale: ["flat", "house", "land", "commercial"],
+};
 
 export function ListingWizard() {
   const router = useRouter();
@@ -170,13 +188,17 @@ export function ListingWizard() {
             <Select
               id="tx"
               value={transaction}
-              onChange={(e) =>
-                setTransaction(e.target.value as TransactionType)
-              }
+              onChange={(e) => {
+                const tx = e.target.value as TransactionType;
+                setTransaction(tx);
+                if (!VALID_PROPERTIES[tx].includes(property)) {
+                  setProperty(VALID_PROPERTIES[tx][0]);
+                }
+              }}
             >
               {TRANSACTIONS.map((t) => (
                 <option key={t} value={t}>
-                  {t}
+                  {TX_LABEL[t]}
                 </option>
               ))}
             </Select>
@@ -188,9 +210,9 @@ export function ListingWizard() {
               value={property}
               onChange={(e) => setProperty(e.target.value as PropertyType)}
             >
-              {PROPERTIES.map((p) => (
+              {VALID_PROPERTIES[transaction].map((p) => (
                 <option key={p} value={p}>
-                  {p}
+                  {PROP_LABEL[p]}
                 </option>
               ))}
             </Select>
