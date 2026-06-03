@@ -81,9 +81,10 @@ export function SearchFilters({
             className="mt-1"
           >
             <option value="">Any</option>
-            <option value="flat">Flat</option>
-            <option value="house">House</option>
-            <option value="land">Land</option>
+            <option value="flat">Flat / Apartment</option>
+            <option value="house">House / Villa</option>
+            <option value="land">Land / Plot</option>
+            <option value="commercial">Commercial</option>
           </Select>
         </Field>
         <Field label="BHK">
