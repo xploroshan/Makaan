@@ -71,6 +71,7 @@ export interface ListingRow {
   bhk: number | null;
   furnishing: string | null;
   available_from: string | null;
+  amenities: string[];
   attributes: Record<string, unknown>;
   published_at: string | null;
   created_at: string;

@@ -54,6 +54,14 @@ export async function SiteHeader() {
             size="sm"
             className="hidden md:inline-flex"
           >
+            <Link href="/insights">Insights</Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden lg:inline-flex"
+          >
             <Link href="/how-it-works">How it works</Link>
           </Button>
           {user ? (

@@ -18,7 +18,7 @@ import { resolveTemplate, validateAttributes } from "./form-templates";
 const LISTING_COLUMNS =
   "id, owner_id, agent_id, transaction_type, property_type, status, title, " +
   "description, price, deposit, area_sqft, bhk, furnishing, available_from, " +
-  "attributes, published_at, created_at, updated_at";
+  "amenities, attributes, published_at, created_at, updated_at";
 
 /** Attribute keys that also live as first-class, searchable columns. */
 const CORE_FROM_ATTRS = [
@@ -87,6 +87,8 @@ export async function updateListing(
   ] as const) {
     if (input[key] !== undefined) patch[key] = input[key];
   }
+
+  if (input.amenities !== undefined) patch.amenities = input.amenities;
 
   if (input.attributes) {
     const template = await resolveTemplate(

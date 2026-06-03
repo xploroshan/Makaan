@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
+import { AMENITIES } from "@/lib/amenities";
 import type {
   FormTemplate,
   ListingRow,
@@ -38,6 +39,7 @@ export function ListingWizard() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [values, setValues] = useState<Values>({});
+  const [amenities, setAmenities] = useState<string[]>([]);
   const [location, setLocation] = useState({
     city: "",
     locality: "",
@@ -93,6 +95,7 @@ export function ListingWizard() {
           title: title || undefined,
           description: description || undefined,
           attributes,
+          amenities,
           location: cleanLocation(location),
         }),
       }),
@@ -242,6 +245,36 @@ export function ListingWizard() {
               />
             ))}
           </div>
+
+          <fieldset>
+            <legend className="mb-2 text-sm font-semibold">Amenities</legend>
+            <div className="flex flex-wrap gap-2">
+              {AMENITIES.map((a) => {
+                const on = amenities.includes(a.key);
+                return (
+                  <button
+                    key={a.key}
+                    type="button"
+                    onClick={() =>
+                      setAmenities((prev) =>
+                        on
+                          ? prev.filter((k) => k !== a.key)
+                          : [...prev, a.key],
+                      )
+                    }
+                    aria-pressed={on}
+                    className={
+                      on
+                        ? "border-primary bg-primary/10 text-primary rounded-full border px-3 py-1.5 text-sm font-medium"
+                        : "hover:border-primary rounded-full border px-3 py-1.5 text-sm"
+                    }
+                  >
+                    {a.label}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
 
           <fieldset className="grid gap-4 sm:grid-cols-2">
             <legend className="mb-2 text-sm font-semibold">Location</legend>
