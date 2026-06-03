@@ -60,6 +60,41 @@ export interface RevealedContact {
   email: string | null;
 }
 
+export type OfferStatus =
+  | "submitted"
+  | "accepted"
+  | "declined"
+  | "withdrawn"
+  | "completed";
+
+export interface Offer {
+  id: string;
+  listing_id: string;
+  applicant_id: string;
+  offer_price: number;
+  deposit: number | null;
+  move_in: string | null;
+  duration_months: number | null;
+  message: string | null;
+  status: OfferStatus;
+  created_at: string;
+}
+
+/** An offer as the applicant sees it (with listing context). */
+export interface OfferWithListing extends Offer {
+  listing_title: string | null;
+  owner_id: string;
+  transaction_type: string;
+  listing_status: string;
+}
+
+/** An offer as the owner sees it (with applicant + listing context). */
+export interface OfferWithApplicant extends Offer {
+  listing_title: string | null;
+  transaction_type: string;
+  applicant_name: string | null;
+}
+
 export interface OwnerDashboard {
   listings: { total: number; active: number; rented_sold: number };
   views: number;

@@ -15,6 +15,7 @@ import { notFound } from "next/navigation";
 import { CompareToggle } from "@/components/compare/compare-toggle";
 import { AmenitiesGrid } from "@/components/listings/amenities";
 import { InterestButton } from "@/components/listings/interest-button";
+import { OfferButton } from "@/components/listings/offer-button";
 import { ListingCard } from "@/components/listings/listing-card";
 import { RecentlyViewedTracker } from "@/components/recently-viewed";
 import { SaveButton } from "@/components/shortlist/save-button";
@@ -396,6 +397,13 @@ export default async function ListingDetailPage({
                 <InterestButton listingId={listing.id} />
               )}
             </div>
+            {!isOwner && (
+              <OfferButton
+                listingId={listing.id}
+                transactionType={listing.transaction_type}
+                defaultPrice={listing.price}
+              />
+            )}
             <div className="mt-3 flex items-center gap-2">
               <SaveButton listingId={listing.id} withLabel className="flex-1 justify-center" />
               <CompareToggle listing={summary} />

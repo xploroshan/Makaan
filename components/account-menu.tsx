@@ -41,9 +41,10 @@ export function AccountMenu({
     { href: "/flatmates/mine", label: "My flatmate posts" },
     { href: "/account/profile", label: "Profile & security" },
     { href: "/account/alerts", label: "Saved searches & alerts" },
-    { href: "/account/activity", label: "Activity" },
+    { href: "/account/activity", label: "Activity & applications" },
     { href: "/chats", label: "Messages" },
     { href: "/owner/dashboard", label: "Owner dashboard" },
+    { href: "/owner/applications", label: "Applications received" },
     ...(isAdmin ? [{ href: "/admin", label: "Admin console" }] : []),
   ];
 
