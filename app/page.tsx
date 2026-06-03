@@ -3,15 +3,18 @@ import {
   BadgeCheck,
   Building2,
   Home as HomeIcon,
+  MapPin,
   MessageSquareLock,
   Search,
   ShieldCheck,
   Sparkles,
   Trees,
+  Users,
 } from "lucide-react";
 
 import { HeroSearch } from "@/components/home/hero-search";
 import { ListingCard } from "@/components/listings/listing-card";
+import { RecentlyViewedStrip } from "@/components/recently-viewed";
 import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/db/supabase-server";
@@ -28,7 +31,9 @@ const CATEGORIES = [
     label: "Co-living / PG",
     icon: MessageSquareLock,
   },
+  { href: "/flatmates", label: "Find a flatmate", icon: Users },
   { href: "/search?property_type=land", label: "Plots & land", icon: Trees },
+  { href: "/search?view=map", label: "Map search", icon: MapPin },
 ];
 
 const PILLARS = [
@@ -161,6 +166,8 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <RecentlyViewedStrip />
 
       {/* Pillars */}
       <section className="mx-auto w-full max-w-6xl px-6 py-16">

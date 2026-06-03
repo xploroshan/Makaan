@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home } from "lucide-react";
+import { Heart, Home } from "lucide-react";
 
 import { AccountMenu } from "@/components/account-menu";
 import { NotificationBell } from "@/components/notification-bell";
@@ -38,10 +38,33 @@ export async function SiteHeader() {
             size="sm"
             className="hidden sm:inline-flex"
           >
+            <Link href="/flatmates">Flatmates</Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             <Link href="/owner/listings/new">List property</Link>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden md:inline-flex"
+          >
+            <Link href="/how-it-works">How it works</Link>
           </Button>
           {user ? (
             <>
+              <Link
+                href="/account/saved"
+                aria-label="Saved homes"
+                className="hover:bg-accent hover:text-accent-foreground text-muted-foreground hidden size-9 items-center justify-center rounded-full transition-colors sm:flex"
+              >
+                <Heart className="size-5" />
+              </Link>
               <NotificationBell />
               <AccountMenu email={user.email} isAdmin={isAdmin} />
             </>

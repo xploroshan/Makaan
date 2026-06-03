@@ -37,13 +37,13 @@ export function supportsCursor(sort: SortOption): boolean {
   return sort === "newest" || sort === "relevance";
 }
 
-const SUMMARY_SELECT =
+export const SUMMARY_SELECT =
   "id, transaction_type, property_type, title, price, bhk, area_sqft, " +
   "furnishing, created_at, " +
-  "locations!inner(locality, city, pincode), " +
+  "locations!inner(locality, city, pincode, lat, lng), " +
   "media(url, sort_order)";
 
-type SummaryRow = {
+export type SummaryRow = {
   id: string;
   transaction_type: ListingSummary["transaction_type"];
   property_type: ListingSummary["property_type"];
@@ -53,11 +53,16 @@ type SummaryRow = {
   area_sqft: number | null;
   furnishing: string | null;
   created_at: string;
-  locations:
-    | { locality: string | null; city: string | null; pincode: string | null }
-    | { locality: string | null; city: string | null; pincode: string | null }[]
-    | null;
+  locations: LocationLite | LocationLite[] | null;
   media: { url: string; sort_order: number }[] | null;
+};
+
+type LocationLite = {
+  locality: string | null;
+  city: string | null;
+  pincode: string | null;
+  lat: number | null;
+  lng: number | null;
 };
 
 /** Run a faceted + geo + pincode search over active listings. */
@@ -139,7 +144,7 @@ export async function searchListings(
   return { items, nextCursor };
 }
 
-function toSummary(row: SummaryRow): ListingSummary {
+export function toSummary(row: SummaryRow): ListingSummary {
   const loc = Array.isArray(row.locations)
     ? (row.locations[0] ?? null)
     : row.locations;
@@ -159,6 +164,8 @@ function toSummary(row: SummaryRow): ListingSummary {
     locality: loc?.locality ?? null,
     city: loc?.city ?? null,
     pincode: loc?.pincode ?? null,
+    lat: loc?.lat ?? null,
+    lng: loc?.lng ?? null,
     cover_url: cover,
     created_at: row.created_at,
   };

@@ -12,8 +12,13 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CompareToggle } from "@/components/compare/compare-toggle";
 import { InterestButton } from "@/components/listings/interest-button";
 import { ListingCard } from "@/components/listings/listing-card";
+import { RecentlyViewedTracker } from "@/components/recently-viewed";
+import { SaveButton } from "@/components/shortlist/save-button";
+import { EmiCalculator } from "@/components/tools/emi-calculator";
+import { RentAffordability } from "@/components/tools/rent-affordability";
 import { Badge } from "@/components/ui/badge";
 import { Stars } from "@/components/ui/stars";
 import { ApiError } from "@/lib/api/errors";
@@ -97,6 +102,24 @@ export default async function ListingDetailPage({
     .filter(Boolean)
     .join(", ");
   const photos = listing.media.filter((m) => m.type === "photo");
+  const summary: ListingSummary = {
+    id: listing.id,
+    transaction_type: listing.transaction_type,
+    property_type: listing.property_type,
+    title: listing.title,
+    price: listing.price,
+    bhk: listing.bhk,
+    area_sqft: listing.area_sqft,
+    furnishing: listing.furnishing,
+    locality: listing.location?.locality ?? null,
+    city: listing.location?.city ?? null,
+    pincode: listing.location?.pincode ?? null,
+    lat: listing.location?.lat ?? null,
+    lng: listing.location?.lng ?? null,
+    cover_url: photos[0]?.url ?? null,
+    created_at: listing.created_at,
+  };
+  const isSale = listing.transaction_type === "sale";
   const avg =
     ratings.length > 0
       ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
@@ -125,6 +148,7 @@ export default async function ListingDetailPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
+      <RecentlyViewedTracker listing={summary} />
       <Link
         href="/search"
         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
@@ -269,6 +293,17 @@ export default async function ListingDetailPage({
               ))}
             </div>
           </section>
+
+          <section className="mt-10">
+            <h2 className="text-lg font-semibold">Plan your budget</h2>
+            <div className="mt-4">
+              {isSale ? (
+                <EmiCalculator price={listing.price} />
+              ) : (
+                <RentAffordability />
+              )}
+            </div>
+          </section>
         </div>
 
         {/* Sticky contact card */}
@@ -293,6 +328,10 @@ export default async function ListingDetailPage({
               ) : (
                 <InterestButton listingId={listing.id} />
               )}
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <SaveButton listingId={listing.id} withLabel className="flex-1 justify-center" />
+              <CompareToggle listing={summary} />
             </div>
           </div>
         </aside>

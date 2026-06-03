@@ -89,6 +89,40 @@ export async function listMessages(
   return (data ?? []) as unknown as Message[];
 }
 
+/**
+ * Find or create a listing-less direct chat between two users (used by the
+ * flatmate finder for peer-to-peer messaging). Idempotent per pair.
+ */
+export async function startDirectChat(
+  supabase: DbClient,
+  meId: string,
+  otherId: string,
+): Promise<{ id: string }> {
+  if (meId === otherId) {
+    throw ApiError.validation("You can't message yourself.");
+  }
+  const { data: existing, error: findErr } = await supabase
+    .from("chats")
+    .select("id")
+    .is("listing_id", null)
+    .or(
+      `and(owner_id.eq.${meId},seeker_id.eq.${otherId}),` +
+        `and(owner_id.eq.${otherId},seeker_id.eq.${meId})`,
+    )
+    .limit(1);
+  if (findErr) throw findErr;
+  const found = (existing ?? [])[0] as { id: string } | undefined;
+  if (found) return { id: found.id };
+
+  const { data, error } = await supabase
+    .from("chats")
+    .insert({ owner_id: meId, seeker_id: otherId, listing_id: null })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data as unknown as { id: string };
+}
+
 export interface ChatSummary extends Chat {
   listing_title: string | null;
 }
