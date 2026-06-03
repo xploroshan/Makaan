@@ -27,6 +27,8 @@ export const searchQuerySchema = z
     furnishing: z.enum(["unfurnished", "semi", "full"]).optional(),
     price_min: z.coerce.number().nonnegative().optional(),
     price_max: z.coerce.number().nonnegative().optional(),
+    // Comma-separated amenity keys; listings must have all of them.
+    amenities: z.string().max(400).optional(),
     lat: latitude.optional(),
     lng: longitude.optional(),
     radius_m: z.coerce.number().int().min(100).max(50000).optional(),

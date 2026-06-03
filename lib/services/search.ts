@@ -88,6 +88,15 @@ export async function searchListings(
   if (q.price_min !== undefined) query = query.gte("price", q.price_min);
   if (q.price_max !== undefined) query = query.lte("price", q.price_max);
 
+  // Amenities: listing must include every requested amenity (text[] @> array).
+  if (q.amenities) {
+    const keys = q.amenities
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (keys.length) query = query.contains("amenities", keys);
+  }
+
   // --- location scoping ---
   if (q.pincode) query = query.eq("locations.pincode", q.pincode);
   if (q.city) query = query.ilike("locations.city", `%${q.city}%`);

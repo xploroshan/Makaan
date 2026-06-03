@@ -7,7 +7,8 @@ import { Select } from "@/components/ui/select";
 
 /**
  * Server-rendered filter bar. Submits as a GET form so search works without
- * JavaScript and every result page is shareable/SEO-friendly.
+ * JavaScript and every result page is shareable/SEO-friendly. Amenities and the
+ * list/map view are carried through as hidden fields so they survive a submit.
  */
 export function SearchFilters({
   defaults,
@@ -23,7 +24,14 @@ export function SearchFilters({
         <SlidersHorizontal className="size-4" />
         Filters
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+
+      {/* Preserve amenity chips + the list/map view across a submit. */}
+      <input type="hidden" name="amenities" value={defaults.amenities ?? ""} />
+      {defaults.view && (
+        <input type="hidden" name="view" value={defaults.view} />
+      )}
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <div className="col-span-2 sm:col-span-3 lg:col-span-2">
           <Label htmlFor="q" className="text-muted-foreground text-xs">
             Keyword
@@ -36,28 +44,25 @@ export function SearchFilters({
             className="mt-1"
           />
         </div>
-        <div>
-          <Label htmlFor="pincode" className="text-muted-foreground text-xs">
-            Pincode
-          </Label>
+        <Field label="City">
           <Input
-            id="pincode"
+            name="city"
+            defaultValue={defaults.city}
+            placeholder="Bengaluru"
+            className="mt-1"
+          />
+        </Field>
+        <Field label="Pincode">
+          <Input
             name="pincode"
             defaultValue={defaults.pincode}
             placeholder="560034"
             inputMode="numeric"
             className="mt-1"
           />
-        </div>
-        <div>
-          <Label
-            htmlFor="transaction_type"
-            className="text-muted-foreground text-xs"
-          >
-            Type
-          </Label>
+        </Field>
+        <Field label="Type">
           <Select
-            id="transaction_type"
             name="transaction_type"
             defaultValue={defaults.transaction_type ?? ""}
             className="mt-1"
@@ -68,17 +73,21 @@ export function SearchFilters({
             <option value="coliving">Co-living</option>
             <option value="sale">Sale</option>
           </Select>
-        </div>
-        <div>
-          <Label htmlFor="bhk" className="text-muted-foreground text-xs">
-            BHK
-          </Label>
+        </Field>
+        <Field label="Property">
           <Select
-            id="bhk"
-            name="bhk"
-            defaultValue={defaults.bhk ?? ""}
+            name="property_type"
+            defaultValue={defaults.property_type ?? ""}
             className="mt-1"
           >
+            <option value="">Any</option>
+            <option value="flat">Flat</option>
+            <option value="house">House</option>
+            <option value="land">Land</option>
+          </Select>
+        </Field>
+        <Field label="BHK">
+          <Select name="bhk" defaultValue={defaults.bhk ?? ""} className="mt-1">
             <option value="">Any</option>
             {[1, 2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>
@@ -86,13 +95,39 @@ export function SearchFilters({
               </option>
             ))}
           </Select>
-        </div>
-        <div>
-          <Label htmlFor="sort" className="text-muted-foreground text-xs">
-            Sort
-          </Label>
+        </Field>
+        <Field label="Furnishing">
           <Select
-            id="sort"
+            name="furnishing"
+            defaultValue={defaults.furnishing ?? ""}
+            className="mt-1"
+          >
+            <option value="">Any</option>
+            <option value="unfurnished">Unfurnished</option>
+            <option value="semi">Semi-furnished</option>
+            <option value="full">Fully furnished</option>
+          </Select>
+        </Field>
+        <Field label="Min price">
+          <Input
+            name="price_min"
+            defaultValue={defaults.price_min}
+            placeholder="₹"
+            inputMode="numeric"
+            className="mt-1"
+          />
+        </Field>
+        <Field label="Max price">
+          <Input
+            name="price_max"
+            defaultValue={defaults.price_max}
+            placeholder="₹"
+            inputMode="numeric"
+            className="mt-1"
+          />
+        </Field>
+        <Field label="Sort">
+          <Select
             name="sort"
             defaultValue={defaults.sort ?? "newest"}
             className="mt-1"
@@ -101,7 +136,7 @@ export function SearchFilters({
             <option value="price_asc">Price ↑</option>
             <option value="price_desc">Price ↓</option>
           </Select>
-        </div>
+        </Field>
         <div className="col-span-2 flex items-end sm:col-span-1">
           <Button type="submit" className="w-full">
             Search
@@ -109,5 +144,20 @@ export function SearchFilters({
         </div>
       </div>
     </form>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <Label className="text-muted-foreground text-xs">{label}</Label>
+      {children}
+    </div>
   );
 }

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CompareToggle } from "@/components/compare/compare-toggle";
+import { AmenitiesGrid } from "@/components/listings/amenities";
 import { InterestButton } from "@/components/listings/interest-button";
 import { ListingCard } from "@/components/listings/listing-card";
 import { RecentlyViewedTracker } from "@/components/recently-viewed";
@@ -27,6 +28,7 @@ import { createSupabaseServerClient } from "@/lib/db/supabase-server";
 import { formatArea, formatPrice, transactionLabel } from "@/lib/format";
 import { hasRevealedContact } from "@/lib/services/enquiries";
 import { resolveTemplate } from "@/lib/services/form-templates";
+import { getAreaInsights, type AreaInsights } from "@/lib/services/insights";
 import { getListingDetail } from "@/lib/services/listings";
 import { listListingRatings } from "@/lib/services/ratings";
 import type { RatingWithAuthor } from "@/lib/services/ratings";
@@ -46,6 +48,7 @@ export default async function ListingDetailPage({
   let labels: Record<string, string> = {};
   let ratings: RatingWithAuthor[] = [];
   let similar: ListingSummary[] = [];
+  let insights: AreaInsights | null = null;
   let isOwner = false;
   try {
     const viewer = await getSessionUser();
@@ -86,6 +89,13 @@ export default async function ListingDetailPage({
       city: listing.location?.city ?? null,
       pincode: listing.location?.pincode ?? null,
     });
+
+    if (listing.location?.city) {
+      insights = await getAreaInsights(supabase, {
+        city: listing.location.city,
+        transaction_type: listing.transaction_type,
+      });
+    }
   } catch (err) {
     if (err instanceof ApiError && err.code === "not_found") notFound();
     return (
@@ -294,6 +304,15 @@ export default async function ListingDetailPage({
             </div>
           </section>
 
+          {listing.amenities.length > 0 && (
+            <section className="mt-10">
+              <h2 className="text-lg font-semibold">Amenities</h2>
+              <div className="mt-4">
+                <AmenitiesGrid amenities={listing.amenities} />
+              </div>
+            </section>
+          )}
+
           <section className="mt-10">
             <h2 className="text-lg font-semibold">Plan your budget</h2>
             <div className="mt-4">
@@ -304,6 +323,54 @@ export default async function ListingDetailPage({
               )}
             </div>
           </section>
+
+          {insights && insights.stats.count > 1 && (
+            <section className="mt-10">
+              <h2 className="text-lg font-semibold">
+                Market snapshot · {listing.location?.city}
+              </h2>
+              <div className="bg-card shadow-soft mt-4 rounded-2xl border p-5">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <div className="text-primary text-xl font-bold">
+                      {insights.stats.avgPrice != null
+                        ? formatPrice(insights.stats.avgPrice)
+                        : "—"}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      Avg {transactionLabel(listing.transaction_type).toLowerCase()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">
+                      {insights.stats.avgPricePerSqft != null
+                        ? formatPrice(insights.stats.avgPricePerSqft)
+                        : "—"}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      Avg / sq ft
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">
+                      {insights.stats.count}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      Comparable homes
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href={`/insights?city=${encodeURIComponent(
+                    listing.location?.city ?? "",
+                  )}&transaction_type=${listing.transaction_type}`}
+                  className="text-primary mt-4 inline-block text-sm underline"
+                >
+                  See full price trends →
+                </Link>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Sticky contact card */}

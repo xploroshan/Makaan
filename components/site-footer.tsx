@@ -24,6 +24,7 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     title: "Resources",
     links: [
       { href: "/how-it-works", label: "How it works" },
+      { href: "/insights", label: "Price trends & insights" },
       { href: "/tools", label: "EMI & rent calculators" },
       { href: "/compare", label: "Compare homes" },
       { href: "/faq", label: "Help & FAQ" },

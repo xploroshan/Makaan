@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AMENITY_KEYS } from "@/lib/amenities";
+
 import {
   latitude,
   longitude,
@@ -38,6 +40,7 @@ export const updateListingSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}/, "Expected a date")
     .optional(),
+  amenities: z.array(z.enum(AMENITY_KEYS)).max(40).optional(),
   attributes: z.record(z.string(), z.unknown()).optional(),
   location: listingLocationSchema.optional(),
 });

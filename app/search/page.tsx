@@ -1,6 +1,7 @@
 import { SearchX } from "lucide-react";
 import Link from "next/link";
 
+import { AMENITIES } from "@/lib/amenities";
 import { ListingCard } from "@/components/listings/listing-card";
 import { NlSearchBox } from "@/components/search/nl-search-box";
 import { SaveSearchButton } from "@/components/search/save-search-button";
@@ -68,6 +69,21 @@ export default async function SearchPage({
   const toUrl = (overrides: Record<string, string>) =>
     `/search?${new URLSearchParams({ ...baseParams, ...overrides }).toString()}`;
 
+  const activeAmenities = (raw.amenities ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const amenityToggleUrl = (key: string) => {
+    const set = new Set(activeAmenities);
+    if (set.has(key)) set.delete(key);
+    else set.add(key);
+    const next: Record<string, string> = { ...raw };
+    delete next.cursor;
+    if (set.size) next.amenities = [...set].join(",");
+    else delete next.amenities;
+    return `/search?${new URLSearchParams(next).toString()}`;
+  };
+
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -112,6 +128,25 @@ export default async function SearchPage({
 
       {nlEnabled && <NlSearchBox />}
       <SearchFilters defaults={raw} />
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {AMENITIES.map((a) => {
+          const on = activeAmenities.includes(a.key);
+          return (
+            <Link
+              key={a.key}
+              href={amenityToggleUrl(a.key)}
+              className={
+                on
+                  ? "border-primary bg-primary/10 text-primary rounded-full border px-3 py-1 text-xs font-medium"
+                  : "text-muted-foreground hover:border-primary hover:text-primary rounded-full border px-3 py-1 text-xs"
+              }
+            >
+              {a.label}
+            </Link>
+          );
+        })}
+      </div>
 
       <div className="mt-3 flex justify-end">
         <SaveSearchButton
