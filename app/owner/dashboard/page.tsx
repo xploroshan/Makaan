@@ -29,6 +29,12 @@ export default function OwnerDashboardPage() {
         <h1 className="text-2xl font-bold">Owner dashboard</h1>
         <div className="flex items-center gap-4">
           <Link
+            href="/owner/applications"
+            className="text-primary text-sm underline"
+          >
+            Applications
+          </Link>
+          <Link
             href="/owner/coliving"
             className="text-primary text-sm underline"
           >

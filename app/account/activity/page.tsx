@@ -9,7 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
-import type { EnquiryWithListing } from "@/lib/types/connect";
+import { formatPrice } from "@/lib/format";
+import type {
+  EnquiryWithListing,
+  OfferWithListing,
+} from "@/lib/types/connect";
 import type { VisitWithListing } from "@/lib/services/visits";
 
 export default function ActivityPage() {
@@ -17,23 +21,26 @@ export default function ActivityPage() {
   const [sent, setSent] = useState<EnquiryWithListing[]>([]);
   const [received, setReceived] = useState<EnquiryWithListing[]>([]);
   const [visits, setVisits] = useState<VisitWithListing[]>([]);
+  const [offers, setOffers] = useState<OfferWithListing[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   async function load() {
     try {
-      const [profile, enquiries, myVisits] = await Promise.all([
+      const [profile, enquiries, myVisits, myOffers] = await Promise.all([
         apiFetch<{ id: string }>("/api/v1/me"),
         apiFetch<{
           sent: EnquiryWithListing[];
           received: EnquiryWithListing[];
         }>("/api/v1/me/enquiries"),
         apiFetch<VisitWithListing[]>("/api/v1/me/visits"),
+        apiFetch<OfferWithListing[]>("/api/v1/me/offers"),
       ]);
       setMe(profile.id);
       setSent(enquiries.sent);
       setReceived(enquiries.received);
       setVisits(myVisits);
+      setOffers(myOffers);
     } catch (e) {
       setError(
         e instanceof ApiClientError && e.code === "unauthenticated"
@@ -76,6 +83,53 @@ export default function ActivityPage() {
       {msg && (
         <p className="bg-accent/40 rounded-md border p-3 text-sm">{msg}</p>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>My applications</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {offers.length === 0 && (
+            <p className="text-muted-foreground text-sm">
+              No applications yet. Open a listing and{" "}
+              <span className="font-medium">apply / make an offer</span> to start
+              a deal.
+            </p>
+          )}
+          {offers.map((o) => (
+            <div
+              key={o.id}
+              className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 last:border-0"
+            >
+              <div>
+                <div className="font-medium">{o.listing_title ?? "Listing"}</div>
+                <div className="text-muted-foreground text-sm">
+                  {formatPrice(o.offer_price)}
+                  {o.transaction_type !== "sale" && "/mo"} · {o.status}
+                </div>
+              </div>
+              {(o.status === "submitted" || o.status === "accepted") && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    act(
+                      () =>
+                        apiFetch(`/api/v1/offers/${o.id}`, {
+                          method: "PATCH",
+                          body: JSON.stringify({ status: "withdrawn" }),
+                        }),
+                      "Application withdrawn.",
+                    )
+                  }
+                >
+                  Withdraw
+                </Button>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
